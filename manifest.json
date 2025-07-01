@@ -1,6 +1,6 @@
 {
-  "name": "PWA Token Test",
-  "short_name": "TokenPWA",
+  "name": "Thumbmark PWA",
+  "short_name": "ThumbPWA",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -16,12 +16,5 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-  "share_target": {
-    "action": "/",
-    "method": "GET",
-    "params": {
-      "install_token": "install_token"
-    }
-  }
+  ]
 }
