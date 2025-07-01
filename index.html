@@ -3,46 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PWA com install_token</title>
+  <title>PWA com install_token e share_target</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#ffffff" />
   <style>
     body { font-family: sans-serif; padding: 2rem; }
-    .banner { padding: 1rem; background: #f1f1f1; margin-top: 1rem; }
+    .hint { background: #f0f0f0; padding: 1rem; margin-top: 1rem; }
   </style>
 </head>
 <body>
-  <h1>Teste de install_token no PWA</h1>
+  <h1>Teste de install_token + share_target</h1>
   <p><strong>Modo:</strong> <span id="mode"></span></p>
   <p id="status"></p>
-  <div class="banner" id="hint" style="display: none;">
-    ✅ Token salvo! Agora adicione o app à tela inicial para continuar logado automaticamente.
+  <div class="hint" id="hint" style="display: none;">
+    🔁 Token salvo! Agora adicione o app à tela inicial para continuar logado automaticamente.
   </div>
 
   <script>
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                         window.navigator.standalone === true;
-
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     document.getElementById('mode').innerText = isStandalone ? 'PWA (standalone)' : 'Navegador';
 
     const params = new URLSearchParams(window.location.search);
     const installToken = params.get('install_token');
+    const sharedText = params.get('text');
 
-    const statusEl = document.getElementById('status');
-    const hintEl = document.getElementById('hint');
+    const status = document.getElementById('status');
+    const hint = document.getElementById('hint');
 
     if (installToken) {
       localStorage.setItem('install_token', installToken);
-      statusEl.textContent = `🔐 install_token salvo: ${installToken}`;
+      status.innerText = `🔐 install_token salvo: ${installToken}`;
       if (!isStandalone) {
-        hintEl.style.display = 'block';
+        hint.style.display = 'block';
       }
+    } else if (sharedText) {
+      status.innerText = `📩 Texto compartilhado recebido: ${sharedText}`;
     } else {
-      const stored = localStorage.getItem('install_token');
-      if (stored) {
-        statusEl.textContent = `✅ install_token recuperado do storage: ${stored}`;
+      const savedToken = localStorage.getItem('install_token');
+      if (savedToken) {
+        status.innerText = `✅ install_token recuperado do localStorage: ${savedToken}`;
       } else {
-        statusEl.textContent = '❌ Nenhum install_token encontrado.';
+        status.innerText = '❌ Nenhum token presente.';
       }
     }
 
