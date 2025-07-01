@@ -1,6 +1,6 @@
 {
-  "name": "PWA Storage Test",
-  "short_name": "StorageTest",
+  "name": "PWA Install Token",
+  "short_name": "InstallPWA",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
