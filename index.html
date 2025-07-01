@@ -1,55 +1,45 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <title>ThumbmarkJS no PWA</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ffffff" />
-    <link rel="manifest" href="manifest.json" />
-    <style>
-      body {
-        font-family: sans-serif;
-        padding: 2rem;
-      }
-      code {
-        background: #eee;
-        padding: 0.5rem;
-        display: block;
-        margin-top: 1rem;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Fingerprint com ThumbmarkJS</h1>
-    <p><strong>Modo:</strong> <span id="mode">Detectando...</span></p>
-    <p><strong>Fingerprint:</strong></p>
-    <code id="fingerprint">Carregando...</code>
+<head>
+  <meta charset="UTF-8" />
+  <title>ThumbmarkJS no PWA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ffffff" />
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    code { background: #eee; padding: 0.5rem; display: block; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>ThumbmarkJS PWA Teste</h1>
+  <p><strong>Modo:</strong> <span id="mode">Detectando...</span></p>
+  <p><strong>Fingerprint:</strong></p>
+  <code id="fingerprint">Carregando...</code>
 
-    <!-- ThumbmarkJS via CDN -->
-    <script type="module">
-      import thumbmark from "https://cdn.jsdelivr.net/npm/@thumbmarkjs/thumbmarkjs/+esm";
+  <!-- ThumbmarkJS UMD via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@thumbmarkjs/thumbmarkjs/dist/thumbmark.umd.js"></script>
+  <script>
+    const modeEl = document.getElementById('mode');
+    const fpEl = document.getElementById('fingerprint');
 
-      const isStandalone =
-        window.matchMedia('(display-mode: standalone)').matches ||
-        window.navigator.standalone === true;
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
+    modeEl.innerText = isStandalone ? 'PWA Instalado' : 'Navegador';
 
-      document.getElementById('mode').innerText = isStandalone
-        ? 'PWA Instalado'
-        : 'Navegador';
-
-      try {
-        const fingerprint = await thumbmark();
-        document.getElementById('fingerprint').innerText = fingerprint;
-        // Aqui você pode enviar o fingerprint ao backend, se quiser
-      } catch (err) {
-        document.getElementById('fingerprint').innerText = 'Erro ao gerar fingerprint';
-        console.error(err);
-      }
-
-      // Service worker opcional
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js');
-      }
-    </script>
-  </body>
+    if (typeof ThumbmarkJS !== 'undefined' && ThumbmarkJS.getFingerprint) {
+      ThumbmarkJS.getFingerprint()
+        .then(fp => {
+          fpEl.innerText = fp;
+        })
+        .catch(err => {
+          fpEl.innerText = 'Erro ao gerar fingerprint';
+          console.error(err);
+        });
+    } else {
+      fpEl.innerText = 'ThumbmarkJS não disponível';
+    }
+  </script>
+</body>
 </html>
