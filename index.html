@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>PWA Share Target com Input</title>
+  <title>PWA IndexedDB com Input</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#ffffff" />
@@ -13,10 +13,10 @@
   </style>
 </head>
 <body>
-  <h1>Teste de install_token</h1>
+  <h1>Token via IndexedDB</h1>
   <p><strong>Modo:</strong> <span id="mode">Detectando...</span></p>
 
-  <label for="tokenInput">install_token recebido:</label>
+  <label for="tokenInput">install_token:</label>
   <input type="text" id="tokenInput" readonly placeholder="Aguardando token..." />
 
   <script>
@@ -28,21 +28,57 @@
       ? 'PWA Instalado'
       : 'Navegador';
 
-    // Captura do parâmetro na URL
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('install_token') || params.get('text');
-
-    if (token) {
-      sessionStorage.setItem('shared_token', token);
+    // IndexedDB helpers
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('PWA_DB', 1);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('tokens')) {
+            db.createObjectStore('tokens', { keyPath: 'key' });
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
     }
 
-    const stored = sessionStorage.getItem('shared_token');
-    const input = document.getElementById('tokenInput');
-    if (stored) {
-      input.value = stored;
-    } else {
-      input.placeholder = 'Nenhum token encontrado.';
+    async function saveToken(key, value) {
+      const db = await openDB();
+      const tx = db.transaction('tokens', 'readwrite');
+      const store = tx.objectStore('tokens');
+      store.put({ key, value });
+      return tx.complete;
     }
+
+    async function getToken(key) {
+      const db = await openDB();
+      const tx = db.transaction('tokens', 'readonly');
+      const store = tx.objectStore('tokens');
+      return new Promise((resolve, reject) => {
+        const request = store.get(key);
+        request.onsuccess = () => resolve(request.result?.value);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    // Captura o token da URL e salva
+    (async () => {
+      const params = new URLSearchParams(location.search);
+      const token = params.get('install_token') || params.get('text');
+      const input = document.getElementById('tokenInput');
+
+      if (token) {
+        await saveToken('install_token', token);
+      }
+
+      const stored = await getToken('install_token');
+      if (stored) {
+        input.value = stored;
+      } else {
+        input.placeholder = 'Nenhum token encontrado.';
+      }
+    })();
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js');
