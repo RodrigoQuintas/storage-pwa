@@ -2,49 +2,46 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
+  <title>PWA Share Target com Input</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PWA com install_token e share_target</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#ffffff" />
   <style>
     body { font-family: sans-serif; padding: 2rem; }
-    .hint { background: #f0f0f0; padding: 1rem; margin-top: 1rem; }
+    label, input { display: block; margin-top: 1rem; font-size: 1rem; }
+    input { padding: 0.5rem; width: 100%; max-width: 400px; }
   </style>
 </head>
 <body>
-  <h1>Teste de install_token + share_target</h1>
-  <p><strong>Modo:</strong> <span id="mode"></span></p>
-  <p id="status"></p>
-  <div class="hint" id="hint" style="display: none;">
-    🔁 Token salvo! Agora adicione o app à tela inicial para continuar logado automaticamente.
-  </div>
+  <h1>Teste de install_token</h1>
+  <p><strong>Modo:</strong> <span id="mode">Detectando...</span></p>
+
+  <label for="tokenInput">install_token recebido:</label>
+  <input type="text" id="tokenInput" readonly placeholder="Aguardando token..." />
 
   <script>
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    document.getElementById('mode').innerText = isStandalone ? 'PWA (standalone)' : 'Navegador';
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true;
 
+    document.getElementById('mode').innerText = isStandalone
+      ? 'PWA Instalado'
+      : 'Navegador';
+
+    // Captura do parâmetro na URL
     const params = new URLSearchParams(window.location.search);
-    const installToken = params.get('install_token');
-    const sharedText = params.get('text');
+    const token = params.get('install_token') || params.get('text');
 
-    const status = document.getElementById('status');
-    const hint = document.getElementById('hint');
+    if (token) {
+      sessionStorage.setItem('shared_token', token);
+    }
 
-    if (installToken) {
-      localStorage.setItem('install_token', installToken);
-      status.innerText = `🔐 install_token salvo: ${installToken}`;
-      if (!isStandalone) {
-        hint.style.display = 'block';
-      }
-    } else if (sharedText) {
-      status.innerText = `📩 Texto compartilhado recebido: ${sharedText}`;
+    const stored = sessionStorage.getItem('shared_token');
+    const input = document.getElementById('tokenInput');
+    if (stored) {
+      input.value = stored;
     } else {
-      const savedToken = localStorage.getItem('install_token');
-      if (savedToken) {
-        status.innerText = `✅ install_token recuperado do localStorage: ${savedToken}`;
-      } else {
-        status.innerText = '❌ Nenhum token presente.';
-      }
+      input.placeholder = 'Nenhum token encontrado.';
     }
 
     if ('serviceWorker' in navigator) {
