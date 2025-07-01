@@ -2,43 +2,49 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>ThumbmarkJS no PWA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PWA Storage Test</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#ffffff" />
   <style>
     body { font-family: sans-serif; padding: 2rem; }
-    code { background: #eee; padding: 0.5rem; display: block; margin-top: 1rem; }
+    input, button { font-size: 1rem; margin-top: 1rem; display: block; }
   </style>
 </head>
 <body>
-  <h1>ThumbmarkJS PWA Teste</h1>
-  <p><strong>Modo:</strong> <span id="mode">Detectando...</span></p>
-  <p><strong>Fingerprint:</strong></p>
-  <code id="fingerprint">Carregando...</code>
+  <h1>Teste de localStorage no PWA</h1>
+  <p><strong>Modo:</strong> <span id="mode"></span></p>
 
-  <!-- ThumbmarkJS UMD via CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@thumbmarkjs/thumbmarkjs/dist/thumbmark.umd.js"></script>
+  <label for="token">Token:</label>
+  <input type="text" id="token" placeholder="Digite um token" />
+  <button onclick="salvarToken()">Salvar no localStorage</button>
+  <button onclick="mostrarToken()">Mostrar token salvo</button>
+  <p id="resultado"></p>
+
   <script>
-    const modeEl = document.getElementById('mode');
-    const fpEl = document.getElementById('fingerprint');
+    // Detecta se está rodando como PWA
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                         window.navigator.standalone === true;
+    document.getElementById('mode').textContent = isStandalone ? 'PWA' : 'Navegador';
 
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true;
-    modeEl.innerText = isStandalone ? 'PWA Instalado' : 'Navegador';
+    function salvarToken() {
+      const token = document.getElementById('token').value;
+      localStorage.setItem('user_token', token);
+      document.getElementById('resultado').textContent = '✅ Token salvo com sucesso.';
+    }
 
-    if (typeof ThumbmarkJS !== 'undefined' && ThumbmarkJS.getFingerprint) {
-      ThumbmarkJS.getFingerprint()
-        .then(fp => {
-          fpEl.innerText = fp;
-        })
-        .catch(err => {
-          fpEl.innerText = 'Erro ao gerar fingerprint';
-          console.error(err);
-        });
-    } else {
-      fpEl.innerText = 'ThumbmarkJS não disponível';
+    function mostrarToken() {
+      const token = localStorage.getItem('user_token');
+      if (token) {
+        document.getElementById('resultado').textContent = `🧠 Token armazenado: ${token}`;
+      } else {
+        document.getElementById('resultado').textContent = '❌ Nenhum token encontrado.';
+      }
+    }
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
     }
   </script>
 </body>
