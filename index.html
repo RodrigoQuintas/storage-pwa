@@ -1,106 +1,185 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>PWA IndexedDB com Input Manual</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#ffffff" />
-  <style>
-    body { font-family: sans-serif; padding: 2rem; }
-    label, input, button { display: block; margin-top: 1rem; font-size: 1rem; }
-    input { padding: 0.5rem; width: 100%; max-width: 400px; }
-    button { padding: 0.5rem 1rem; cursor: pointer; }
-    .output { margin-top: 1rem; font-weight: bold; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Abrir Franq Extranet</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .app-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            min-width: 200px;
+        }
+        
+        .app-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .app-button.secondary {
+            background-color: #6c757d;
+        }
+        
+        .app-button.secondary:hover {
+            background-color: #545b62;
+        }
+        
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #495057;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
 </head>
 <body>
-  <h1>Token via IndexedDB</h1>
-  <p><strong>Modo:</strong> <span id="mode">Detectando...</span></p>
+    <div class="container">
+        <h1>🚀 Teste Franq Extranet</h1>
+        <p>Clique no botão abaixo para abrir o aplicativo Franq Extranet</p>
+        
+        <!-- Botão principal usando custom scheme -->
+        <a href="com.grupoboticario.franq.extranet://" class="app-button" id="openApp">
+            📱 Abrir App Franq Extranet
+        </a>
+        
+        <!-- Botão alternativo usando intent (Android) -->
+        <a href="intent://open#Intent;scheme=com.grupoboticario.franq.extranet;package=com.grupoboticario.franq.extranet;end" class="app-button secondary" id="openAppIntent">
+            🤖 Abrir via Intent (Android)
+        </a>
+        
+        <!-- Botão para testar via JavaScript -->
+        <button class="app-button" onclick="openAppWithFallback()" id="openAppJS">
+            ⚡ Abrir com JavaScript
+        </button>
+        
+        <div class="info" id="status">
+            💡 Clique em qualquer botão para testar a abertura do app
+        </div>
+    </div>
 
-  <label for="tokenInput">Digite o install_token:</label>
-  <input type="text" id="tokenInput" placeholder="Ex: abc123" />
-
-  <button id="saveBtn">Salvar token</button>
-  <button id="getBtn">Resgatar token</button>
-
-  <p class="output" id="output">Nenhum valor salvo ainda.</p>
-
-<script>
-  const isStandalone =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone === true;
-
-  document.getElementById('mode').innerText = isStandalone
-    ? 'PWA Instalado'
-    : 'Navegador';
-
-  function openDB() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open('PWA_DB', 1);
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        if (!db.objectStoreNames.contains('tokens')) {
-          db.createObjectStore('tokens', { keyPath: 'key' });
+    <script>
+        // Função para abrir o app com fallback
+        function openAppWithFallback() {
+            const appScheme = 'com.grupoboticario.franq.extranet://';
+            const fallbackUrl = 'https://play.google.com/store/apps/details?id=com.grupoboticario.franq.extranet';
+            
+            updateStatus('Tentando abrir o aplicativo...', 'info');
+            
+            // Detectar se é iOS ou Android
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isAndroid = /Android/.test(navigator.userAgent);
+            
+            if (isIOS) {
+                // Para iOS
+                window.location = appScheme;
+                setTimeout(() => {
+                    updateStatus('App não encontrado. Redirecionando para App Store...', 'error');
+                    window.location = 'https://apps.apple.com/app/id1234567890'; // Substitua pelo ID real da App Store
+                }, 2000);
+            } else if (isAndroid) {
+                // Para Android - tenta abrir o app
+                const intentUrl = `intent://open#Intent;scheme=com.grupoboticario.franq.extranet;package=com.grupoboticario.franq.extranet;end`;
+                
+                try {
+                    window.location = intentUrl;
+                    setTimeout(() => {
+                        updateStatus('App não encontrado. Redirecionando para Play Store...', 'error');
+                        window.location = fallbackUrl;
+                    }, 2000);
+                } catch (e) {
+                    updateStatus('Erro ao tentar abrir o app: ' + e.message, 'error');
+                    window.location = fallbackUrl;
+                }
+            } else {
+                // Desktop ou outros dispositivos
+                updateStatus('Este teste funciona melhor em dispositivos móveis', 'error');
+                window.open(appScheme, '_blank');
+            }
         }
-      };
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async function saveToken(key, value) {
-    const db = await openDB();
-    const tx = db.transaction('tokens', 'readwrite');
-    const store = tx.objectStore('tokens');
-    return new Promise((resolve, reject) => {
-      const req = store.put({ key, value });
-      req.onsuccess = () => resolve();
-      req.onerror = (err) => reject(err);
-    });
-  }
-
-  async function getToken(key) {
-    const db = await openDB();
-    const tx = db.transaction('tokens', 'readonly');
-    const store = tx.objectStore('tokens');
-    return new Promise((resolve, reject) => {
-      const req = store.get(key);
-      req.onsuccess = () => resolve(req.result?.value);
-      req.onerror = () => reject(req.error);
-    });
-  }
-
-  const input = document.getElementById('tokenInput');
-  const output = document.getElementById('output');
-
-  document.getElementById('saveBtn').addEventListener('click', async () => {
-    const value = input.value.trim();
-    if (!value) return alert('Digite um valor primeiro.');
-    await saveToken('install_token', value);
-    output.innerText = `✅ Token salvo: ${value}`;
-  });
-
-  document.getElementById('getBtn').addEventListener('click', async () => {
-    const stored = await getToken('install_token');
-    output.innerText = stored
-      ? `📦 Token recuperado: ${stored}`
-      : '❌ Nenhum token salvo.';
-  });
-
-  // ✅ Ao carregar a página, preencher o input com o valor salvo (se existir)
-  window.addEventListener('DOMContentLoaded', async () => {
-    const stored = await getToken('install_token');
-    if (stored) {
-      input.value = stored;
-      output.innerText = `🔁 Token carregado automaticamente: ${stored}`;
-    }
-  });
-
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js');
-  }
-</script>
-
+        
+        // Função para atualizar o status
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `info ${type}`;
+        }
+        
+        // Adicionar listeners para os links diretos
+        document.getElementById('openApp').addEventListener('click', function(e) {
+            updateStatus('Tentando abrir via custom scheme...', 'info');
+            setTimeout(() => {
+                updateStatus('Se o app não abriu, ele pode não estar instalado', 'error');
+            }, 2000);
+        });
+        
+        document.getElementById('openAppIntent').addEventListener('click', function(e) {
+            updateStatus('Tentando abrir via Intent (Android)...', 'info');
+            setTimeout(() => {
+                updateStatus('Se o app não abriu, ele pode não estar instalado', 'error');
+            }, 2000);
+        });
+        
+        // Detectar se o app foi aberto com sucesso
+        window.addEventListener('blur', function() {
+            setTimeout(() => {
+                updateStatus('✅ App aberto com sucesso!', 'success');
+            }, 100);
+        });
+        
+        // Detectar volta para a página
+        window.addEventListener('focus', function() {
+            setTimeout(() => {
+                updateStatus('🔄 Voltou para a página - app pode não ter aberto', 'info');
+            }, 100);
+        });
+    </script>
 </body>
 </html>
