@@ -22,7 +22,7 @@
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            max-width: 500px;
             width: 90%;
         }
         
@@ -35,15 +35,15 @@
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 16px;
+            padding: 15px 20px;
+            font-size: 14px;
             border-radius: 5px;
             cursor: pointer;
-            margin: 10px;
+            margin: 8px;
             transition: background-color 0.3s;
             text-decoration: none;
             display: inline-block;
-            min-width: 200px;
+            min-width: 220px;
         }
         
         .app-button:hover {
@@ -56,6 +56,14 @@
         
         .app-button.secondary:hover {
             background-color: #545b62;
+        }
+        
+        .app-button.success {
+            background-color: #28a745;
+        }
+        
+        .app-button.success:hover {
+            background-color: #218838;
         }
         
         .info {
@@ -78,31 +86,62 @@
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+        
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        
+        .section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Teste Franq Extranet</h1>
-        <p>Clique no botão abaixo para abrir o aplicativo Franq Extranet</p>
+        <h1>🚀 Teste Deep Links - Franq Extranet</h1>
+        <p>Teste os diferentes esquemas de deep link para abrir o aplicativo</p>
         
-        <!-- Botão principal usando custom scheme -->
-        <a href="com.grupoboticario.franq.extranet://" class="app-button" id="openApp">
-            📱 Abrir App Franq Extranet
-        </a>
+        <div class="section">
+            <h3>📱 Scheme 1: com.grupoboticario.franq.extranet</h3>
+            
+            <!-- Botão principal usando custom scheme original -->
+            <a href="com.grupoboticario.franq.extranet://" class="app-button" id="openApp">
+                📱 Custom Scheme
+            </a>
+            
+            <!-- Botão alternativo usando intent (Android) -->
+            <a href="intent://open#Intent;scheme=com.grupoboticario.franq.extranet;package=com.grupoboticario.franq.extranet;end" class="app-button secondary" id="openAppIntent">
+                🤖 Intent Android
+            </a>
+        </div>
         
-        <!-- Botão alternativo usando intent (Android) -->
-        <a href="intent://open#Intent;scheme=com.grupoboticario.franq.extranet;package=com.grupoboticario.franq.extranet;end" class="app-button secondary" id="openAppIntent">
-            🤖 Abrir via Intent (Android)
-        </a>
+        <div class="section">
+            <h3>📱 Scheme 2: com.grupoboticario.extranet (NOVO)</h3>
+            
+            <!-- Botão com novo esquema -->
+            <a href="com.grupoboticario.extranet://" class="app-button success" id="openAppNew">
+                📱 Custom Scheme
+            </a>
+            
+            <!-- Botão intent com novo esquema -->
+            <a href="intent://open#Intent;scheme=com.grupoboticario.extranet;package=com.grupoboticario.franq.extranet;end" class="app-button success" id="openAppIntentNew">
+                🤖 Intent Android
+            </a>
+        </div>
         
         <!-- Botão para testar via JavaScript -->
         <button class="app-button" onclick="openAppWithFallback()" id="openAppJS">
-            ⚡ Abrir com JavaScript
+            ⚡ Testar com JavaScript
         </button>
         
         <!-- Botão para testar métodos alternativos -->
         <button class="app-button secondary" onclick="testAlternativeMethods()" id="testAlternative">
-            🔧 Testar Métodos Alternativos
+            🔧 Testar Todos os Métodos
         </button>
         
         <div class="info" id="status">
@@ -111,9 +150,12 @@
         
         <div class="info">
             <strong>📋 Para debugging via ADB:</strong><br>
-            <code style="font-size: 12px; background: #f8f9fa; padding: 5px; border-radius: 3px; display: block; margin-top: 5px;">
+            <code style="font-size: 12px; background: #f8f9fa; padding: 5px; border-radius: 3px; display: block; margin: 5px 0;">
+                adb shell am start -W -a android.intent.action.VIEW -d "com.grupoboticario.extranet://"
+            </code>
+            <code style="font-size: 12px; background: #f8f9fa; padding: 5px; border-radius: 3px; display: block; margin: 5px 0;">
                 adb shell am start -W -a android.intent.action.VIEW -d "com.grupoboticario.franq.extranet://"
-            </code><br>
+            </code>
             <strong>🔍 Verificar se app está instalado:</strong><br>
             <code style="font-size: 12px; background: #f8f9fa; padding: 5px; border-radius: 3px; display: block; margin-top: 5px;">
                 adb shell pm list packages | grep boticario
@@ -124,59 +166,63 @@
     <script>
         // Função para abrir o app sem fallback para lojas
         function openAppWithFallback() {
-            const appScheme = 'com.grupoboticario.franq.extranet://';
+            const schemes = [
+                'com.grupoboticario.extranet://',
+                'com.grupoboticario.franq.extranet://'
+            ];
             
-            updateStatus('Tentando abrir o aplicativo local...', 'info');
+            updateStatus('Tentando abrir o aplicativo com múltiplos schemes...', 'info');
             
             // Detectar se é iOS ou Android
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
             const isAndroid = /Android/.test(navigator.userAgent);
             
-            if (isIOS) {
-                // Para iOS - tenta custom scheme
-                window.location = appScheme;
-                setTimeout(() => {
-                    updateStatus('❌ App não foi aberto. Verifique se está instalado.', 'error');
-                }, 3000);
-            } else if (isAndroid) {
-                // Para Android - tenta várias abordagens
-                const intentUrl = `intent://open#Intent;scheme=com.grupoboticario.franq.extranet;package=com.grupoboticario.franq.extranet;end`;
-                
-                try {
-                    // Primeiro tenta via Intent
-                    window.location = intentUrl;
-                    
-                    setTimeout(() => {
-                        // Se não funcionou, tenta custom scheme
-                        updateStatus('Tentando método alternativo...', 'info');
-                        window.location = appScheme;
-                        
-                        setTimeout(() => {
-                            updateStatus('❌ App não foi aberto. Verifique se está instalado e se os deep links estão configurados.', 'error');
-                        }, 2000);
-                    }, 1500);
-                } catch (e) {
-                    updateStatus('Erro: ' + e.message + ' - Tentando custom scheme...', 'error');
-                    window.location = appScheme;
+            let currentScheme = 0;
+            
+            function tryNextScheme() {
+                if (currentScheme >= schemes.length) {
+                    updateStatus('❌ Nenhum scheme funcionou. Verifique se o app está instalado.', 'error');
+                    return;
                 }
-            } else {
-                // Desktop ou outros dispositivos
-                updateStatus('⚠️ Este teste é para dispositivos móveis onde o app está instalado', 'error');
-                // Ainda assim tenta abrir
-                window.open(appScheme, '_blank');
+                
+                const scheme = schemes[currentScheme];
+                updateStatus(`Testando scheme ${currentScheme + 1}: ${scheme}`, 'info');
+                
+                if (isIOS) {
+                    window.location = scheme;
+                } else if (isAndroid) {
+                    const intentUrl = `intent://open#Intent;scheme=${scheme.replace('://', '')};package=com.grupoboticario.franq.extranet;end`;
+                    
+                    try {
+                        window.location = intentUrl;
+                    } catch (e) {
+                        console.log(`Scheme ${scheme} falhou:`, e);
+                        window.location = scheme;
+                    }
+                } else {
+                    window.open(scheme, '_blank');
+                }
+                
+                currentScheme++;
+                setTimeout(tryNextScheme, 2000);
             }
+            
+            tryNextScheme();
         }
         
         // Função para testar métodos alternativos
         function testAlternativeMethods() {
-            updateStatus('Testando métodos alternativos...', 'info');
+            updateStatus('Testando todos os métodos disponíveis...', 'info');
             
             const methods = [
+                'com.grupoboticario.extranet://',
+                'com.grupoboticario.extranet://open',
+                'com.grupoboticario.extranet://main',
                 'com.grupoboticario.franq.extranet://',
                 'com.grupoboticario.franq.extranet://open',
                 'com.grupoboticario.franq.extranet://main',
                 'franq-extranet://',
-                'franqextranet://'
+                'extranet://'
             ];
             
             let currentMethod = 0;
@@ -188,7 +234,7 @@
                 }
                 
                 const method = methods[currentMethod];
-                updateStatus(`Testando método ${currentMethod + 1}: ${method}`, 'info');
+                updateStatus(`Testando método ${currentMethod + 1}/${methods.length}: ${method}`, 'info');
                 
                 try {
                     window.location = method;
@@ -197,7 +243,7 @@
                 }
                 
                 currentMethod++;
-                setTimeout(tryNextMethod, 2000);
+                setTimeout(tryNextMethod, 1500);
             }
             
             tryNextMethod();
@@ -212,14 +258,28 @@
         
         // Adicionar listeners para os links diretos
         document.getElementById('openApp').addEventListener('click', function(e) {
-            updateStatus('Tentando abrir via custom scheme...', 'info');
+            updateStatus('Tentando abrir via scheme original...', 'info');
+            setTimeout(() => {
+                updateStatus('❌ Se o app não abriu, verifique se está instalado no dispositivo', 'error');
+            }, 3000);
+        });
+        
+        document.getElementById('openAppNew').addEventListener('click', function(e) {
+            updateStatus('Tentando abrir via novo scheme...', 'info');
             setTimeout(() => {
                 updateStatus('❌ Se o app não abriu, verifique se está instalado no dispositivo', 'error');
             }, 3000);
         });
         
         document.getElementById('openAppIntent').addEventListener('click', function(e) {
-            updateStatus('Tentando abrir via Intent (Android)...', 'info');
+            updateStatus('Tentando abrir via Intent (scheme original)...', 'info');
+            setTimeout(() => {
+                updateStatus('❌ Se o app não abriu, verifique se está instalado no dispositivo', 'error');
+            }, 3000);
+        });
+        
+        document.getElementById('openAppIntentNew').addEventListener('click', function(e) {
+            updateStatus('Tentando abrir via Intent (novo scheme)...', 'info');
             setTimeout(() => {
                 updateStatus('❌ Se o app não abriu, verifique se está instalado no dispositivo', 'error');
             }, 3000);
