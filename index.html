@@ -100,49 +100,107 @@
             ⚡ Abrir com JavaScript
         </button>
         
+        <!-- Botão para testar métodos alternativos -->
+        <button class="app-button secondary" onclick="testAlternativeMethods()" id="testAlternative">
+            🔧 Testar Métodos Alternativos
+        </button>
+        
         <div class="info" id="status">
             💡 Clique em qualquer botão para testar a abertura do app
+        </div>
+        
+        <div class="info">
+            <strong>📋 Para debugging via ADB:</strong><br>
+            <code style="font-size: 12px; background: #f8f9fa; padding: 5px; border-radius: 3px; display: block; margin-top: 5px;">
+                adb shell am start -W -a android.intent.action.VIEW -d "com.grupoboticario.franq.extranet://"
+            </code><br>
+            <strong>🔍 Verificar se app está instalado:</strong><br>
+            <code style="font-size: 12px; background: #f8f9fa; padding: 5px; border-radius: 3px; display: block; margin-top: 5px;">
+                adb shell pm list packages | grep boticario
+            </code>
         </div>
     </div>
 
     <script>
-        // Função para abrir o app com fallback
+        // Função para abrir o app sem fallback para lojas
         function openAppWithFallback() {
             const appScheme = 'com.grupoboticario.franq.extranet://';
-            const fallbackUrl = 'https://play.google.com/store/apps/details?id=com.grupoboticario.franq.extranet';
             
-            updateStatus('Tentando abrir o aplicativo...', 'info');
+            updateStatus('Tentando abrir o aplicativo local...', 'info');
             
             // Detectar se é iOS ou Android
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
             const isAndroid = /Android/.test(navigator.userAgent);
             
             if (isIOS) {
-                // Para iOS
+                // Para iOS - tenta custom scheme
                 window.location = appScheme;
                 setTimeout(() => {
-                    updateStatus('App não encontrado. Redirecionando para App Store...', 'error');
-                    window.location = 'https://apps.apple.com/app/id1234567890'; // Substitua pelo ID real da App Store
-                }, 2000);
+                    updateStatus('❌ App não foi aberto. Verifique se está instalado.', 'error');
+                }, 3000);
             } else if (isAndroid) {
-                // Para Android - tenta abrir o app
+                // Para Android - tenta várias abordagens
                 const intentUrl = `intent://open#Intent;scheme=com.grupoboticario.franq.extranet;package=com.grupoboticario.franq.extranet;end`;
                 
                 try {
+                    // Primeiro tenta via Intent
                     window.location = intentUrl;
+                    
                     setTimeout(() => {
-                        updateStatus('App não encontrado. Redirecionando para Play Store...', 'error');
-                        window.location = fallbackUrl;
-                    }, 2000);
+                        // Se não funcionou, tenta custom scheme
+                        updateStatus('Tentando método alternativo...', 'info');
+                        window.location = appScheme;
+                        
+                        setTimeout(() => {
+                            updateStatus('❌ App não foi aberto. Verifique se está instalado e se os deep links estão configurados.', 'error');
+                        }, 2000);
+                    }, 1500);
                 } catch (e) {
-                    updateStatus('Erro ao tentar abrir o app: ' + e.message, 'error');
-                    window.location = fallbackUrl;
+                    updateStatus('Erro: ' + e.message + ' - Tentando custom scheme...', 'error');
+                    window.location = appScheme;
                 }
             } else {
                 // Desktop ou outros dispositivos
-                updateStatus('Este teste funciona melhor em dispositivos móveis', 'error');
+                updateStatus('⚠️ Este teste é para dispositivos móveis onde o app está instalado', 'error');
+                // Ainda assim tenta abrir
                 window.open(appScheme, '_blank');
             }
+        }
+        
+        // Função para testar métodos alternativos
+        function testAlternativeMethods() {
+            updateStatus('Testando métodos alternativos...', 'info');
+            
+            const methods = [
+                'com.grupoboticario.franq.extranet://',
+                'com.grupoboticario.franq.extranet://open',
+                'com.grupoboticario.franq.extranet://main',
+                'franq-extranet://',
+                'franqextranet://'
+            ];
+            
+            let currentMethod = 0;
+            
+            function tryNextMethod() {
+                if (currentMethod >= methods.length) {
+                    updateStatus('❌ Nenhum método funcionou. Verifique a configuração de deep links no app.', 'error');
+                    return;
+                }
+                
+                const method = methods[currentMethod];
+                updateStatus(`Testando método ${currentMethod + 1}: ${method}`, 'info');
+                
+                try {
+                    window.location = method;
+                } catch (e) {
+                    console.log(`Método ${method} falhou:`, e);
+                }
+                
+                currentMethod++;
+                setTimeout(tryNextMethod, 2000);
+            }
+            
+            tryNextMethod();
         }
         
         // Função para atualizar o status
@@ -156,15 +214,15 @@
         document.getElementById('openApp').addEventListener('click', function(e) {
             updateStatus('Tentando abrir via custom scheme...', 'info');
             setTimeout(() => {
-                updateStatus('Se o app não abriu, ele pode não estar instalado', 'error');
-            }, 2000);
+                updateStatus('❌ Se o app não abriu, verifique se está instalado no dispositivo', 'error');
+            }, 3000);
         });
         
         document.getElementById('openAppIntent').addEventListener('click', function(e) {
             updateStatus('Tentando abrir via Intent (Android)...', 'info');
             setTimeout(() => {
-                updateStatus('Se o app não abriu, ele pode não estar instalado', 'error');
-            }, 2000);
+                updateStatus('❌ Se o app não abriu, verifique se está instalado no dispositivo', 'error');
+            }, 3000);
         });
         
         // Detectar se o app foi aberto com sucesso
